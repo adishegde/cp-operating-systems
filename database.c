@@ -219,8 +219,7 @@ int db_init() {
 			syserr(AT);
 			return EFAIL;
 		}
-	}
-	if (close(fd) == -1) {
+	} else if (close(fd) == -1) {
 		syserr(AT);
 	}
 	if (init_uid() == EFAIL) {
@@ -233,8 +232,7 @@ int db_init() {
 			syserr(AT);
 			return EFAIL;
 		}
-	}
-	if (close(fd) == -1) {
+	} else if (close(fd) == -1) {
 		syserr(AT);
 	}
 	if (init_aid() == EFAIL) {
@@ -247,8 +245,7 @@ int db_init() {
 			syserr(AT);
 			return EFAIL;
 		}
-	}
-	if (close(fd) == -1) {
+	} else if (close(fd) == -1) {
 		syserr(AT);
 	}
 	if (init_tid() == EFAIL) {
@@ -262,7 +259,7 @@ int create_user(UserModel *user) {
 	int id = new_uid();
 	user->id = id;
 
-	int fd = open(DB_USER_PATH, O_APPEND);
+	int fd = open(DB_USER_PATH, O_WRONLY | O_APPEND);
 	if (fd == -1) {
 		syserr(AT);
 		return EFAIL;
@@ -410,7 +407,7 @@ int get_num_users() {
 	}
 
 	off_t pos;
-	if ((pos = lseek(fd, SEEK_END, 0)) == -1) {
+	if ((pos = lseek(fd, 0, SEEK_END)) == -1) {
 		syserr(AT);
 		return EFAIL;
 	}
@@ -491,7 +488,7 @@ int create_account(AccountModel *account) {
 	int id = new_aid();
 	account->id = id;
 
-	int fd = open(DB_ACCOUNT_PATH, O_APPEND);
+	int fd = open(DB_ACCOUNT_PATH, O_WRONLY | O_APPEND);
 	if (fd == -1) {
 		syserr(AT);
 		return EFAIL;
@@ -638,7 +635,7 @@ int get_num_accounts() {
 	}
 
 	off_t pos;
-	if ((pos = lseek(fd, SEEK_END, 0)) == -1) {
+	if ((pos = lseek(fd, 0, SEEK_END)) == -1) {
 		syserr(AT);
 		return EFAIL;
 	}
@@ -719,7 +716,7 @@ int append_transaction(TransactionModel *trans) {
 	int id = new_tid();
 	trans->id = id;
 
-	int fd = open(DB_TRANS_PATH, O_APPEND);
+	int fd = open(DB_TRANS_PATH, O_WRONLY | O_APPEND);
 	if (fd == -1) {
 		syserr(AT);
 		return EFAIL;

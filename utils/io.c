@@ -1,3 +1,4 @@
+#include<errno.h>
 #include<unistd.h>
 #include<stdio.h>
 #include<string.h>
@@ -7,11 +8,11 @@
 extern int errno;
 
 void syserr(char const *location) {
-	fprintf(stderr, "%s - %s", location, strerror(errno));
+	fprintf(stderr, "%s - %s\n", location, strerror(errno));
 }
 
 void apperr(char const *location, char const *mssg) {
-	fprintf(stderr, "%s - %s", location, mssg);
+	fprintf(stderr, "%s - %s\n", location, mssg);
 }
 
 int safe_read(int fd, void *buf, size_t len) {
