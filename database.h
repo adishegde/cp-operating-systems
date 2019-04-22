@@ -4,14 +4,12 @@
 #include<time.h>
 #include<pthread.h>
 
-#define INFO_STRING_LEN 101	// String length for information related fields
+#include "utils/commons.h"
+
 #define DB_BASE_PATH "./db"
 #define DB_USER_PATH "./db/user.dat"
 #define DB_ACCOUNT_PATH "./db/account.dat"
 #define DB_TRANS_PATH "./db/transaction.dat"
-
-#define EFAIL -100
-#define ENOTFOUND -101
 
 #define id_t unsigned long int	// Data type for ids
 #define balance_t double	// Data type for balance

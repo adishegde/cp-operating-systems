@@ -8,10 +8,10 @@ $(BIN)/t_db: $(BUILD)/t_database.o $(BUILD)/database.o $(BUILD)/u_io.o
 $(BUILD)/u_io.o: utils/io.c utils/io.h
 	$(CC) -o $@ -c utils/io.c
 
-$(BUILD)/database.o: database.c database.h utils/io.h
+$(BUILD)/database.o: database.c database.h utils/io.h utils/commons.h
 	$(CC) -o $@ -c database.c
 
-$(BUILD)/t_database.o: test/database.c database.h
+$(BUILD)/t_database.o: test/database.c database.h utils/commons.h
 	$(CC) -o $@ -c test/database.c
 
 .PHONY: clean t_db

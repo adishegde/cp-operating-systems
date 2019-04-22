@@ -8,6 +8,7 @@
 
 #include "utils/io.h"
 #include "database.h"
+#include "utils/commons.h"
 
 extern int errno;
 

@@ -2,6 +2,7 @@
 #include<string.h>
 #include<stdlib.h>
 
+#include "../utils/commons.h"
 #include "../database.h"
 
 void print_user(UserModel u) {
