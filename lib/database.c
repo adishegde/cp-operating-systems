@@ -256,9 +256,15 @@ int db_init() {
     return 0;
 }
 
+// Ensures that uname is unique and account with aid exists
 int create_user(UserModel *user) {
     UserModel temp;
     if (get_user_from_uname(user->uname, &temp) != ENOTFOUND) {
+        return ECONFLICT;
+    }
+
+    AccountModel acc;
+    if (get_account_from_id(user->aid, &acc) == ENOTFOUND) {
         return ECONFLICT;
     }
 
@@ -604,15 +610,47 @@ int update_account(AccountModel *account) {
     return status;
 }
 
+// Ensures that no user is linked to the account
 int delete_account(id_t aid) {
-    int fd = open(DB_ACCOUNT_PATH, O_RDWR);
+    // Check if any user has given aid
+    int fd = open(DB_USER_PATH, O_RDONLY);
     if (fd == -1) {
         syserr(AT);
         return EFAIL;
     }
 
-    size_t size = sizeof(AccountModel);
-    int status = 0, len;
+    int len;
+    size_t size = sizeof(UserModel);
+    UserModel uiter;
+
+    rec_lock(fd, F_RDLCK, 0, 0);
+    while((len = safe_read(fd, &uiter, size))) {
+        if (len == -1) {
+            syserr(AT);
+        }
+
+        if(uiter.aid == aid) break;
+    }
+    rec_lock(fd, F_UNLCK, 0, 0);
+
+    if(close(fd) == -1) {
+        syserr(AT);
+    }
+
+    // Can't delete account since a user is linked to it
+    if (len != 0) {
+        return ECONFLICT;
+    }
+
+    // Safe to delete the account record
+    fd = open(DB_ACCOUNT_PATH, O_RDWR);
+    if (fd == -1) {
+        syserr(AT);
+        return EFAIL;
+    }
+
+    size = sizeof(AccountModel);
+    int status = 0;
     AccountModel iter;
 
     rec_lock(fd, F_RDLCK, 0, 0);

@@ -11,7 +11,11 @@ typedef enum Action {
     BalanceEnquiry,
     PasswordChange,
     ViewDetails,
-    Logout
+    Logout,
+    CreateUser,
+    ModifyUser,
+    GetUsers,
+    DeleteUser
 } Action;
 
 typedef enum Status {
@@ -19,7 +23,9 @@ typedef enum Status {
     Unauthorized,
     Failure,
     InternalError,
-    NoFunds
+    NoFunds,
+    Conflict,
+    NotFound
 } Status;
 
 typedef struct Header {
@@ -91,10 +97,52 @@ typedef struct CreateUserRequest {
     char uname[INFO_STRING_LEN];
     char password[INFO_STRING_LEN];
     int is_admin;
-    id_t aid;
+    id_t aid; // 0 if creating new account
 } CreateUserRequest;
 
 typedef struct CreateUserResponse {
+    Status stat;
+    id_t uid;
+    id_t aid;
+} CreateUserResponse;
 
-}
+typedef struct GetUsersResponse {
+    Status stat;
+    int num_users;
+} GetUsersResponse;
+
+typedef struct UserItem {
+    Status stat;
+    char name[INFO_STRING_LEN];
+    char uname[INFO_STRING_LEN];
+    char password[INFO_STRING_LEN];
+    int is_admin;
+    id_t aid;
+    id_t id;
+} UserItem;
+
+typedef struct DeleteUserRequest {
+    id_t uid;
+} DeleteUserRequest;
+
+typedef struct DeleteUserResponse {
+    Status stat;
+} DeleteUserResponse;
+
+typedef struct ModifyUserRequest {
+    char name[INFO_STRING_LEN];
+    char password[INFO_STRING_LEN];
+    int is_admin;
+    id_t uid;
+} ModifyUserRequest;
+
+typedef struct ModifyUserResponse {
+    Status stat;
+    char name[INFO_STRING_LEN];
+    char uname[INFO_STRING_LEN];
+    char password[INFO_STRING_LEN];
+    int is_admin;
+    id_t aid;
+    id_t id;
+} ModifyUserResponse;
 #endif

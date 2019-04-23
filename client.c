@@ -348,6 +348,291 @@ void password_change(int sd, id_t sid) {
     printf("--- Password Change ---\n");
 }
 
+void create_user(int sd, id_t sid) {
+    printf("--- Create User ---\n");
+
+    Header head = {.action = CreateUser, .sid = sid};
+    CreateUserRequest req;
+    CreateUserResponse resp;
+
+    printf("Name: ");
+    getchar(); // Newline from menu input
+    fgets(req.name, INFO_STRING_LEN, stdin);
+    req.name[strlen(req.name) - 1] = '\0';
+
+    printf("Username: ");
+    fgets(req.uname, INFO_STRING_LEN, stdin);
+    req.uname[strlen(req.uname) - 1] = '\0';
+
+    printf("Password: ");
+    fgets(req.password, INFO_STRING_LEN, stdin);
+    req.password[strlen(req.password) - 1] = '\0';
+
+    printf("Admin (0/1): ");
+    scanf("%d", &req.is_admin);
+
+    req.aid = 0;
+
+    printf("\n");
+
+    if (write(sd, &head, sizeof(head)) == -1) {
+        syserr(AT);
+        printf("Communication Error.\n");
+    } else if (write(sd, &req, sizeof(req)) == -1) {
+        syserr(AT);
+        printf("Communication Error.\n");
+    } else if (safe_read(sd, &resp, sizeof(resp)) == -1) {
+        syserr(AT);
+        printf("Communication Error.\n");
+    } else if (resp.stat == Unauthorized) {
+        printf("Option accessible to Admins only.\n");
+    } else if (resp.stat == Conflict) {
+        printf("User with same username exists already.\n");
+    } else if (resp.stat != Success) {
+        printf("Request Failed\n");
+    } else {
+        printf("User created successfully.\n");
+
+        ft_table_t *table = ft_create_table();
+        ft_set_border_style(table, FT_DOUBLE2_STYLE);
+
+        ft_set_cell_prop(table, 0, FT_ANY_COLUMN, FT_CPROP_ROW_TYPE, FT_ROW_HEADER);
+        ft_write_ln(table, "New User Details");
+        ft_set_cell_span(table, 0, 0, 2);
+        ft_set_cell_prop(table, 0, FT_ANY_COLUMN, FT_CPROP_TEXT_ALIGN, FT_ALIGNED_CENTER);
+
+        ft_printf_ln(table, "%s|%lu", "User ID", resp.uid);
+        ft_printf_ln(table, "%s|%lu", "Account ID", resp.aid);
+        printf("%s\n", ft_to_string(table));
+
+        ft_destroy_table(table);
+    }
+
+    printf("--- Create User ---\n");
+}
+
+void create_joint_user(int sd, id_t sid) {
+    printf("--- Create Joint User ---\n");
+
+    Header head = {.action = CreateUser, .sid = sid};
+    CreateUserRequest req;
+    CreateUserResponse resp;
+
+    printf("Name: ");
+    getchar(); // Newline from menu input
+    fgets(req.name, INFO_STRING_LEN, stdin);
+    req.name[strlen(req.name) - 1] = '\0';
+
+    printf("Username: ");
+    fgets(req.uname, INFO_STRING_LEN, stdin);
+    req.uname[strlen(req.uname) - 1] = '\0';
+
+    printf("Password: ");
+    fgets(req.password, INFO_STRING_LEN, stdin);
+    req.password[strlen(req.password) - 1] = '\0';
+
+    printf("Admin (0/1): ");
+    scanf("%d", &req.is_admin);
+
+    printf("Account ID: ");
+    scanf("%lu", &req.aid);
+
+    printf("\n");
+
+    if (write(sd, &head, sizeof(head)) == -1) {
+        syserr(AT);
+        printf("Communication Error.\n");
+    } else if (write(sd, &req, sizeof(req)) == -1) {
+        syserr(AT);
+        printf("Communication Error.\n");
+    } else if (safe_read(sd, &resp, sizeof(resp)) == -1) {
+        syserr(AT);
+        printf("Communication Error.\n");
+    } else if (resp.stat == Unauthorized) {
+        printf("Option accessible to Admins only.\n");
+    } else if (resp.stat == Conflict) {
+        printf("User with same username exists already or account does not exist.\n");
+    } else if (resp.stat != Success) {
+        printf("Request Failed\n");
+    } else {
+        printf("User created successfully.\n");
+
+        ft_table_t *table = ft_create_table();
+        ft_set_border_style(table, FT_DOUBLE2_STYLE);
+
+        ft_set_cell_prop(table, 0, FT_ANY_COLUMN, FT_CPROP_ROW_TYPE, FT_ROW_HEADER);
+        ft_write_ln(table, "New User Details");
+        ft_set_cell_span(table, 0, 0, 2);
+        ft_set_cell_prop(table, 0, FT_ANY_COLUMN, FT_CPROP_TEXT_ALIGN, FT_ALIGNED_CENTER);
+
+        ft_printf_ln(table, "%s|%lu", "User ID", resp.uid);
+        ft_printf_ln(table, "%s|%lu", "Account ID", resp.aid);
+        printf("%s\n", ft_to_string(table));
+
+        ft_destroy_table(table);
+    }
+
+    printf("--- Create Joint User ---\n");
+}
+
+void modify_user(int sd, id_t sid) {
+    printf("--- Modify User ---\n");
+
+    Header head = {.action = ModifyUser, .sid = sid};
+    ModifyUserRequest req;
+    ModifyUserResponse resp;
+
+    printf("User ID: ");
+    scanf("%lu", &req.uid);
+
+    printf("Name: ");
+    getchar(); // Newline from menu input
+    fgets(req.name, INFO_STRING_LEN, stdin);
+    req.name[strlen(req.name) - 1] = '\0';
+
+    printf("Password: ");
+    fgets(req.password, INFO_STRING_LEN, stdin);
+    req.password[strlen(req.password) - 1] = '\0';
+
+    printf("Admin (0/1): ");
+    scanf("%d", &req.is_admin);
+
+    printf("\n");
+
+    if (write(sd, &head, sizeof(head)) == -1) {
+        syserr(AT);
+        printf("Communication Error.\n");
+    } else if (write(sd, &req, sizeof(req)) == -1) {
+        syserr(AT);
+        printf("Communication Error.\n");
+    } else if (safe_read(sd, &resp, sizeof(resp)) == -1) {
+        syserr(AT);
+        printf("Communication Error.\n");
+    } else if (resp.stat == Unauthorized) {
+        printf("Option accessible to Admins only.\n");
+    } else if (resp.stat == NotFound) {
+        printf("User with given id does not exist.\n");
+    } else if (resp.stat != Success) {
+        printf("Request Failed\n");
+    } else {
+        printf("User modifies successfully.\n");
+
+        ft_table_t *table = ft_create_table();
+        ft_set_border_style(table, FT_DOUBLE2_STYLE);
+
+        ft_set_cell_prop(table, 0, FT_ANY_COLUMN, FT_CPROP_ROW_TYPE, FT_ROW_HEADER);
+        ft_write_ln(table, "User Details");
+        ft_set_cell_span(table, 0, 0, 2);
+        ft_set_cell_prop(table, 0, FT_ANY_COLUMN, FT_CPROP_TEXT_ALIGN, FT_ALIGNED_CENTER);
+
+        ft_printf_ln(table, "%s|%s", "Name", resp.name);
+        ft_printf_ln(table, "%s|%s", "Username", resp.uname);
+        ft_printf_ln(table, "%s|%s", "Password", resp.password);
+        ft_printf_ln(table, "%s|%d", "Admin", resp.is_admin);
+        ft_printf_ln(table, "%s|%lu", "User ID", resp.id);
+        ft_printf_ln(table, "%s|%lu", "Account ID", resp.aid);
+
+        printf("%s\n", ft_to_string(table));
+
+        ft_destroy_table(table);
+    }
+
+    printf("--- Modify User ---\n");
+}
+
+void get_users(int sd, id_t sid) {
+    printf("--- Get Users ---\n");
+
+    Header head = {.action = GetUsers, .sid = sid};
+    GetUsersResponse resp;
+
+    if (write(sd, &head, sizeof(head)) == -1) {
+        syserr(AT);
+        printf("Communication Error.\n");
+    } else if (safe_read(sd, &resp, sizeof(resp)) == -1) {
+        syserr(AT);
+        printf("Communication Error.\n");
+    } else if (resp.stat == Unauthorized) {
+        printf("Option accessible to Admins only.\n");
+    } else if (resp.stat != Success) {
+        printf("Request Failed\n");
+    } else {
+        ft_table_t *table = ft_create_table();
+        ft_set_border_style(table, FT_DOUBLE2_STYLE);
+
+        ft_set_cell_prop(table, 0, FT_ANY_COLUMN, FT_CPROP_ROW_TYPE, FT_ROW_HEADER);
+        ft_write_ln(table, "Users");
+        ft_set_cell_span(table, 0, 0, 6);
+        ft_set_cell_prop(table, 0, FT_ANY_COLUMN, FT_CPROP_TEXT_ALIGN, FT_ALIGNED_CENTER);
+
+        ft_write_ln(table, "ID", "Name", "Username", "Password", "Admin", "Account ID");
+
+        UserItem iter;
+        int i;
+        for(i = 0; i < resp.num_users; ++i) {
+            if (safe_read(sd, &iter, sizeof(iter)) == -1) {
+                syserr(AT);
+                continue;
+            }
+
+            if (iter.stat != Success) {
+                printf("Response error.\n");
+                break;
+            }
+
+            ft_printf_ln(
+                table,
+                "%lu|%s|%s|%s|%d|%lu",
+                iter.id,
+                iter.name,
+                iter.uname,
+                iter.password,
+                iter.is_admin,
+                iter.aid
+            );
+        }
+
+        printf("%s\n", ft_to_string(table));
+
+        ft_destroy_table(table);
+    }
+
+    printf("--- Get Users ---\n");
+}
+
+void delete_user(int sd, id_t sid) {
+    printf("--- Delete User ---\n");
+
+    Header head = {.action = DeleteUser, .sid = sid};
+    DeleteUserRequest req;
+    DeleteUserResponse resp;
+
+    printf("User ID: ");
+    scanf("%lu", &req.uid);
+    printf("\n");
+
+    if (write(sd, &head, sizeof(head)) == -1) {
+        syserr(AT);
+        printf("Communication Error.\n");
+    } else if (write(sd, &req, sizeof(req)) == -1) {
+        syserr(AT);
+        printf("Communication Error.\n");
+    } else if (safe_read(sd, &resp, sizeof(resp)) == -1) {
+        syserr(AT);
+        printf("Communication Error.\n");
+    } else if (resp.stat == Unauthorized) {
+        printf("Option accessible to Admins only.\n");
+    } else if (resp.stat == NotFound) {
+        printf("User with given id does not exist.\n");
+    } else if (resp.stat != Success) {
+        printf("Request Failed.\n");
+    } else {
+        printf("User deleted successfully.\n");
+    }
+
+    printf("--- Delete User ---\n");
+}
+
 void menu(id_t sid) {
     char *m = "--- Menu ---\n"
               "\t1) Withdraw\n"
@@ -356,6 +641,11 @@ void menu(id_t sid) {
               "\t4) View Details\n"
               "\t5) Password Change\n"
               "\t6) Logout and Exit\n"
+              "\t7) Create User (Admin only)\n"
+              "\t8) Create Joint User (Admin only)\n"
+              "\t9) Modify User (Admin only)\n"
+              "\t10) Get Users (Admin only)\n"
+              "\t11) Delete User (Admin only)\n"
               "--- Menu ---\n";
 
     int opt;
@@ -393,6 +683,26 @@ void menu(id_t sid) {
 
         case 6:
             logout(sd, sid);
+            break;
+
+        case 7:
+            create_user(sd, sid);
+            break;
+
+        case 8:
+            create_joint_user(sd, sid);
+            break;
+
+        case 9:
+            modify_user(sd, sid);
+            break;
+
+        case 10:
+            get_users(sd, sid);
+            break;
+
+        case 11:
+            delete_user(sd, sid);
             break;
 
         default:
