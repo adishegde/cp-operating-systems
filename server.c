@@ -52,7 +52,7 @@ id_t get_uid_from_sid(id_t sid) {
 void close_session(id_t sid) {
     pthread_mutex_lock(&spool.mutex);
 
-    spool.list[sid-1] = -1;
+    spool.list[sid-1] = 0;
 
     pthread_mutex_unlock(&spool.mutex);
 }
@@ -305,7 +305,7 @@ void logout_controller(int nsd, id_t sid) {
 
     close_session(sid);
 
-    printf("logout_controller - Response: SID: %lu Stat:%d\n", sid, resp.stat);
+    printf("logout_controller - Response: SID: %lu Stat: %d\n", sid, resp.stat);
 
     if (write(nsd, &resp, sizeof(resp)) == -1) {
 	syserr(AT);
