@@ -43,7 +43,6 @@ client: $(BIN)/client
 
 clean:
 	rm -r $(BUILD)
-	rm -r db
 
 $(shell mkdir -p $(BUILD))
 $(shell mkdir -p $(BIN))
