@@ -2,8 +2,8 @@
 #include<string.h>
 #include<stdlib.h>
 
-#include "../utils/commons.h"
-#include "../database.h"
+#include "../lib/commons.h"
+#include "../lib/database.h"
 
 void print_user(UserModel u) {
 	printf("ID: %lu Name: %s Acc: %lu\n", u.id, u.name, u.aid);

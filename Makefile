@@ -8,25 +8,37 @@ $(BIN)/t_db: $(BUILD)/t_database.o $(BUILD)/database.o $(BUILD)/u_io.o
 $(BIN)/server: $(BUILD)/server.o $(BUILD)/database.o $(BUILD)/u_io.o
 	$(CC) -o $@ -pthread $^
 
-$(BUILD)/u_io.o: utils/io.c utils/io.h
-	$(CC) -o $@ -c utils/io.c
+$(BIN)/client: $(BUILD)/client.o $(BUILD)/u_io.o $(BUILD)/u_fort.o
+	$(CC) -o $@ $^
 
-$(BUILD)/database.o: database.c database.h utils/io.h utils/commons.h
-	$(CC) -o $@ -c database.c
+$(BUILD)/u_io.o: lib/io.c lib/io.h
+	$(CC) -o $@ -c lib/io.c
 
-$(BUILD)/t_database.o: test/database.c database.h utils/commons.h
+$(BUILD)/database.o: lib/database.c lib/database.h lib/io.h lib/commons.h
+	$(CC) -o $@ -c lib/database.c
+
+$(BUILD)/t_database.o: test/database.c lib/database.h lib/commons.h
 	$(CC) -o $@ -c test/database.c
 
-$(BUILD)/server.o: server.c communicate.h database.h utils/io.h utils/commons.h
+$(BUILD)/server.o: server.c lib/communicate.h lib/database.h lib/io.h lib/commons.h
 	$(CC) -o $@ -c server.c
 
-.PHONY: clean t_db server
+$(BUILD)/u_fort.o: lib/fort.c lib/fort.h
+	$(CC) -o $@ -c lib/fort.c
+
+$(BUILD)/client.o: client.c lib/communicate.h lib/io.h lib/fort.h
+	$(CC) -o $@ -c client.c
+
+.PHONY: clean t_db server client
 
 
 t_db: $(BIN)/t_db
 
 
 server: $(BIN)/server
+
+
+client: $(BIN)/client
 
 
 clean:

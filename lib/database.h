@@ -4,7 +4,7 @@
 #include<time.h>
 #include<pthread.h>
 
-#include "utils/commons.h"
+#include "commons.h"
 
 #define DB_BASE_PATH "./db"
 #define DB_USER_PATH "./db/user.dat"

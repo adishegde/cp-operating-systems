@@ -6,9 +6,9 @@
 #include<string.h>
 #include<stdlib.h>
 
-#include "utils/io.h"
+#include "io.h"
 #include "database.h"
-#include "utils/commons.h"
+#include "commons.h"
 
 extern int errno;
 

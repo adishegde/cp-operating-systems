@@ -7,10 +7,10 @@
 #include <stdlib.h>
 #include <signal.h>
 
-#include "communicate.h"
-#include "database.h"
-#include "utils/io.h"
-#include "utils/commons.h"
+#include "lib/communicate.h"
+#include "lib/database.h"
+#include "lib/io.h"
+#include "lib/commons.h"
 
 #define MAX_SESSIONS 100
 
@@ -114,7 +114,7 @@ void login_controller(int nsd) {
     if (get_user_from_uname(req.uname, &u) < 0) {
 	resp.stat = Failure;
     } else if (strcmp(u.password, req.password) != 0) {
-	resp.stat = Failure;
+	resp.stat = Unauthorized;
     } else {
 	id_t sid = new_session(u.id);
 	resp.sid = sid;
@@ -293,6 +293,7 @@ void view_details_controller(int nsd, id_t sid) {
 	    }
 	}
 
+	free(trans);
     }
 }
 
