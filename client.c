@@ -589,7 +589,7 @@ void get_users(int sd, id_t sid) {
                 iter.password,
                 iter.is_admin,
                 iter.aid
-            );
+                );
         }
 
         printf("%s\n", ft_to_string(table));
@@ -633,6 +633,98 @@ void delete_user(int sd, id_t sid) {
     printf("--- Delete User ---\n");
 }
 
+void get_accounts(int sd, id_t sid) {
+    printf("--- Get Accounts ---\n");
+
+    Header head = {.action = GetAccounts, .sid = sid};
+    GetAccountsResponse resp;
+
+    if (write(sd, &head, sizeof(head)) == -1) {
+        syserr(AT);
+        printf("Communication Error.\n");
+    } else if (safe_read(sd, &resp, sizeof(resp)) == -1) {
+        syserr(AT);
+        printf("Communication Error.\n");
+    } else if (resp.stat == Unauthorized) {
+        printf("Option accessible to Admins only.\n");
+    } else if (resp.stat != Success) {
+        printf("Request Failed\n");
+    } else {
+        ft_table_t *table = ft_create_table();
+        ft_set_border_style(table, FT_DOUBLE2_STYLE);
+
+        ft_set_cell_prop(table, 0, FT_ANY_COLUMN, FT_CPROP_ROW_TYPE, FT_ROW_HEADER);
+        ft_write_ln(table, "Accounts");
+        ft_set_cell_span(table, 0, 0, 2);
+        ft_set_cell_prop(table, 0, FT_ANY_COLUMN, FT_CPROP_TEXT_ALIGN, FT_ALIGNED_CENTER);
+
+        ft_write_ln(table, "ID", "Balance");
+
+        AccountItem iter;
+        int i;
+        for(i = 0; i < resp.num_accounts; ++i) {
+            if (safe_read(sd, &iter, sizeof(iter)) == -1) {
+                syserr(AT);
+                continue;
+            }
+
+            if (iter.stat != Success) {
+                printf("Response error.\n");
+                break;
+            }
+
+            ft_printf_ln(
+                table,
+                "%lu|%lf",
+                iter.id,
+                iter.balance
+                );
+        }
+
+        printf("%s\n", ft_to_string(table));
+
+        ft_destroy_table(table);
+    }
+
+    printf("--- Get Accounts ---\n");
+
+}
+
+void delete_account(int sd, id_t sid) {
+    printf("--- Delete Account ---\n");
+
+    Header head = {.action = DeleteAccount, .sid = sid};
+    DeleteAccountRequest req;
+    DeleteAccountResponse resp;
+
+    printf("Account ID: ");
+    scanf("%lu", &req.aid);
+    printf("\n");
+
+    if (write(sd, &head, sizeof(head)) == -1) {
+        syserr(AT);
+        printf("Communication Error.\n");
+    } else if (write(sd, &req, sizeof(req)) == -1) {
+        syserr(AT);
+        printf("Communication Error.\n");
+    } else if (safe_read(sd, &resp, sizeof(resp)) == -1) {
+        syserr(AT);
+        printf("Communication Error.\n");
+    } else if (resp.stat == Unauthorized) {
+        printf("Option accessible to Admins only.\n");
+    } else if (resp.stat == NotFound) {
+        printf("Account with given id does not exist.\n");
+    } else if (resp.stat == Conflict) {
+        printf("User with given account exists. Delete user first.\n");
+    } else if (resp.stat != Success) {
+        printf("Request Failed.\n");
+    } else {
+        printf("Account deleted successfully.\n");
+    }
+
+    printf("--- Delete Account ---\n");
+}
+
 void menu(id_t sid) {
     char *m = "--- Menu ---\n"
               "\t1) Withdraw\n"
@@ -640,12 +732,14 @@ void menu(id_t sid) {
               "\t3) Balance Enquiry\n"
               "\t4) View Details\n"
               "\t5) Password Change\n"
-              "\t6) Logout and Exit\n"
-              "\t7) Create User (Admin only)\n"
-              "\t8) Create Joint User (Admin only)\n"
-              "\t9) Modify User (Admin only)\n"
-              "\t10) Get Users (Admin only)\n"
+              "\t6) Create User (Admin only)\n"
+              "\t7) Create Joint User (Admin only)\n"
+              "\t8) Modify User (Admin only)\n"
+              "\t9) Get Users (Admin only)\n"
+              "\t10) Get Accounts (Admin only)\n"
               "\t11) Delete User (Admin only)\n"
+              "\t12) Delete Account (Admin only)\n"
+              "\t13) Logout and Exit\n"
               "--- Menu ---\n";
 
     int opt;
@@ -681,28 +775,36 @@ void menu(id_t sid) {
             password_change(sd, sid);
             break;
 
-        case 6:
+        case 13:
             logout(sd, sid);
             break;
 
-        case 7:
+        case 6:
             create_user(sd, sid);
             break;
 
-        case 8:
+        case 7:
             create_joint_user(sd, sid);
             break;
 
-        case 9:
+        case 8:
             modify_user(sd, sid);
             break;
 
-        case 10:
+        case 9:
             get_users(sd, sid);
+            break;
+
+        case 10:
+            get_accounts(sd, sid);
             break;
 
         case 11:
             delete_user(sd, sid);
+            break;
+
+        case 12:
+            delete_account(sd, sid);
             break;
 
         default:

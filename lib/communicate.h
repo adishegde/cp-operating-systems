@@ -15,7 +15,9 @@ typedef enum Action {
     CreateUser,
     ModifyUser,
     GetUsers,
-    DeleteUser
+    DeleteUser,
+    GetAccounts,
+    DeleteAccount
 } Action;
 
 typedef enum Status {
@@ -145,4 +147,23 @@ typedef struct ModifyUserResponse {
     id_t aid;
     id_t id;
 } ModifyUserResponse;
+
+typedef struct GetAccountsResponse {
+    Status stat;
+    int num_accounts;
+} GetAccountsResponse;
+
+typedef struct AccountItem {
+    Status stat;
+    id_t id;
+    balance_t balance;
+} AccountItem;
+
+typedef struct DeleteAccountRequest {
+    id_t aid;
+} DeleteAccountRequest;
+
+typedef struct DeleteAccountResponse {
+    Status stat;
+} DeleteAccountResponse;
 #endif

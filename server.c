@@ -510,13 +510,91 @@ void modify_user_controller(int nsd, id_t sid) {
     }
 }
 
-/*void modify_account_controller(int nsd, id_t sid) {*/
+void get_accounts_controller(int nsd, id_t sid) {
+    printf("get_accounts_controller - Incoming Request: SID: %lu\n", sid);
 
-/*}*/
+    GetAccountsResponse resp;
+    resp.stat = Success;
 
-/*void delete_account_controller(int nsd, id_t sid) {*/
+    id_t uid = get_uid_from_sid(sid);
 
-/*}*/
+    UserModel u;
+
+    if (get_user_from_id(uid, &u) < 0) {
+        resp.stat = Failure;
+    } else if (!u.is_admin) {
+        resp.stat = Unauthorized;
+    } else if ((resp.num_accounts = get_num_accounts()) == EFAIL) {
+        resp.stat = Failure;
+    }
+
+    if (write(nsd, &resp, sizeof(resp)) == -1) {
+        syserr(AT);
+    }
+
+    printf("get_accounts_controller - Response: SID: %lu Status: %d Num_Accounts: %d\n", sid, resp.stat, resp.num_accounts);
+
+    if (resp.stat == Success) {
+        AccountModel *arr = malloc(resp.num_accounts * sizeof(AccountModel));
+        AccountItem aresp;
+        aresp.stat = Success;
+
+        if (get_accounts(arr, resp.num_accounts) == EFAIL) {
+            aresp.stat = Failure;
+
+            if (write(nsd, &aresp, sizeof(aresp)) == -1) {
+                syserr(AT);
+            }
+        } else {
+            int i;
+            for(i = 0; i < resp.num_accounts; ++i) {
+                aresp.balance = arr[i].balance;
+                aresp.id = arr[i].id;
+
+                if (write(nsd, &aresp, sizeof(aresp)) == -1) {
+                    syserr(AT);
+                }
+            }
+        }
+
+        free(arr);
+    }
+
+}
+
+void delete_account_controller(int nsd, id_t sid) {
+    printf("delete_account_controller - Incoming Request: SID: %lu\n", sid);
+
+    DeleteAccountRequest req;
+    DeleteAccountResponse resp;
+    resp.stat = Success;
+
+    if (safe_read(nsd, &req, sizeof(req)) == -1) {
+        syserr(AT);
+    }
+
+    id_t uid = get_uid_from_sid(sid);
+
+    UserModel u;
+    int ret;
+    if (get_user_from_id(uid, &u) < 0) {
+        resp.stat = Failure;
+    } else if (!u.is_admin) {
+        resp.stat = Unauthorized;
+    } else if ((ret = delete_account(req.aid)) == ENOTFOUND) {
+        resp.stat = NotFound;
+    } else if (ret == ECONFLICT) {
+        resp.stat = Conflict;
+    } else if (ret < 0) {
+        resp.stat = Failure;
+    }
+
+    printf("delete_user_controller - Response: SID: %lu Status: %d\n", sid, resp.stat);
+
+    if (write(nsd, &resp, sizeof(resp)) == -1) {
+        syserr(AT);
+    }
+}
 
 void* handle_request(void *sock_desc) {
     int nsd = *(int *)sock_desc;
@@ -566,6 +644,14 @@ void* handle_request(void *sock_desc) {
 
     case DeleteUser:
         delete_user_controller(nsd, header.sid);
+        break;
+
+    case GetAccounts:
+        get_accounts_controller(nsd, header.sid);
+        break;
+
+    case DeleteAccount:
+        delete_account_controller(nsd, header.sid);
         break;
     }
 
