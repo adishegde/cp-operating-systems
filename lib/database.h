@@ -1,8 +1,8 @@
 #ifndef _DATABASE_H
 #define _DATABASE_H
 
-#include<time.h>
-#include<pthread.h>
+#include <time.h>
+#include <pthread.h>
 
 #include "commons.h"
 
@@ -11,31 +11,31 @@
 #define DB_ACCOUNT_PATH "./db/account.dat"
 #define DB_TRANS_PATH "./db/transaction.dat"
 
-#define id_t unsigned long int	// Data type for ids
-#define balance_t double	// Data type for balance
+#define id_t unsigned long int  // Data type for ids
+#define balance_t double    // Data type for balance
 
 /* BEGIN - Models */
 typedef struct UserModel {
-	char name[INFO_STRING_LEN];
-	char uname[INFO_STRING_LEN];
-	char password[INFO_STRING_LEN];
-	int is_admin;
-	id_t aid;
-	id_t id;
+    char name[INFO_STRING_LEN];
+    char uname[INFO_STRING_LEN];
+    char password[INFO_STRING_LEN];
+    int is_admin;
+    id_t aid;
+    id_t id;
 } UserModel;
 
 typedef struct AccountModel {
-	id_t id;
-	balance_t balance;
+    id_t id;
+    balance_t balance;
 } AccountModel;
 
 typedef struct TransactionModel {
-	id_t aid;
-	id_t uid;
-	id_t id;
-	time_t when;
-	balance_t old_balance;
-	balance_t new_balance;
+    id_t aid;
+    id_t uid;
+    id_t id;
+    time_t when;
+    balance_t old_balance;
+    balance_t new_balance;
 } TransactionModel;
 /* END - Models */
 

@@ -1,30 +1,30 @@
 #ifndef _COMMUNICATE_H
 #define _COMMUNICATE_H
 
-#include<time.h>
+#include <time.h>
 
 #include "commons.h"
 
 typedef enum Action {
-	Login,
-	Transaction,
-	BalanceEnquiry,
-	PasswordChange,
-	ViewDetails,
-	Logout
+    Login,
+    Transaction,
+    BalanceEnquiry,
+    PasswordChange,
+    ViewDetails,
+    Logout
 } Action;
 
 typedef enum Status {
-	Success,
-	Unauthorized,
-	Failure,
-	InternalError,
-	NoFunds
+    Success,
+    Unauthorized,
+    Failure,
+    InternalError,
+    NoFunds
 } Status;
 
 typedef struct Header {
-	Action action;
-	id_t sid;
+    Action action;
+    id_t sid;
 } Header;
 
 typedef struct LoginRequest {
@@ -85,4 +85,16 @@ typedef struct TransactionItem {
     balance_t old_balance;
     balance_t new_balance;
 } TransactionItem;
+
+typedef struct CreateUserRequest {
+    char name[INFO_STRING_LEN];
+    char uname[INFO_STRING_LEN];
+    char password[INFO_STRING_LEN];
+    int is_admin;
+    id_t aid;
+} CreateUserRequest;
+
+typedef struct CreateUserResponse {
+
+}
 #endif
