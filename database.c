@@ -257,6 +257,11 @@ int db_init() {
 }
 
 int create_user(UserModel *user) {
+	UserModel temp;
+	if (get_user_from_uname(user->uname, &temp) != ENOTFOUND) {
+		return ECONFLICT;
+	}
+
 	int id = new_uid();
 	user->id = id;
 
@@ -283,7 +288,8 @@ int create_user(UserModel *user) {
 	return status;
 }
 
-int update_user(UserModel const *user) {
+// Will ignore changes to uname and aid
+int update_user(UserModel *user) {
 	int fd = open(DB_USER_PATH, O_RDWR);
 	if (fd == -1) {
 		syserr(AT);
@@ -311,6 +317,10 @@ int update_user(UserModel const *user) {
 			syserr(AT);
 			status = EFAIL;
 		} else {
+			// Remove changes to fields that can't be changed
+			strcpy(user->uname, iter.uname);
+			user->aid = iter.aid;
+
 			rec_lock(fd, F_WRLCK, pos, size);
 			if (write(fd, user, size) == -1) {
 				syserr(AT);
@@ -484,6 +494,42 @@ int get_user_from_id(id_t uid, UserModel *user) {
 	return status;
 }
 
+int get_user_from_uname(char *uname, UserModel *user) {
+	int fd = open(DB_USER_PATH, O_RDONLY);
+	if (fd == -1) {
+		syserr(AT);
+		return EFAIL;
+	}
+
+	size_t size = sizeof(UserModel);
+	int status = 0, len;
+	UserModel iter;
+
+	rec_lock(fd, F_RDLCK, 0, 0);
+	while((len = safe_read(fd, &iter, size))) {
+		if (len == -1) {
+			syserr(AT);
+			continue;
+		}
+
+		if (strcmp(uname, iter.uname) == 0) break;
+	}
+	rec_lock(fd, F_UNLCK, 0, 0);
+
+	if (len != 0) {
+		*user = iter;
+	} else {
+		status = ENOTFOUND;
+	}
+
+	if (close(fd) == -1) {
+		syserr(AT);
+	}
+
+	return status;
+
+}
+
 int create_account(AccountModel *account) {
 	// Get new account id
 	int id = new_aid();
@@ -512,7 +558,7 @@ int create_account(AccountModel *account) {
 	return status;
 }
 
-int update_account(AccountModel const *account) {
+int update_account(AccountModel *account) {
 	int fd = open(DB_ACCOUNT_PATH, O_RDWR);
 	if (fd == -1) {
 		syserr(AT);
@@ -738,5 +784,62 @@ int append_transaction(TransactionModel *trans) {
 	}
 
 	return status;
+}
+
+int get_num_transactions(id_t aid) {
+	int fd = open(DB_TRANS_PATH, O_RDONLY);
+	if (fd == -1) {
+		syserr(AT);
+		return EFAIL;
+	}
+
+	int len, i = 0;
+	size_t size = sizeof(TransactionModel);
+	TransactionModel trans;
+
+	rec_lock(fd, F_RDLCK, 0, 0);
+	while((len = safe_read(fd, &trans, size))) {
+		if (len == -1) {
+			syserr(AT);
+		}
+
+		if (trans.aid == aid) i++;
+	}
+	rec_lock(fd, F_UNLCK, 0, 0);
+
+	if(close(fd) == -1) {
+		syserr(AT);
+	}
+
+	return i;
+}
+
+int get_transactions(id_t aid, TransactionModel *trans, int limit) {
+	int fd = open(DB_TRANS_PATH, O_RDONLY);
+	if (fd == -1) {
+		syserr(AT);
+		return EFAIL;
+	}
+
+	int len, i = 0;
+	size_t size = sizeof(TransactionModel);
+
+	rec_lock(fd, F_RDLCK, 0, 0);
+	while((len = safe_read(fd, (trans + i), size))) {
+		if (len == -1) {
+			syserr(AT);
+		}
+
+		if (trans[i].aid == aid) i++;
+
+		if(i == limit) break;
+	}
+	rec_lock(fd, F_UNLCK, 0, 0);
+
+	if(close(fd) == -1) {
+		syserr(AT);
+	}
+
+	return i;
 }
 /* END - Interface implementation */

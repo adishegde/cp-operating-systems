@@ -107,13 +107,13 @@ int test_user_functions(id_t *accountIds) {
 
 	for(i = 0; i < 3; ++i) {
 		strcpy(u.name, usernames[i]);
-		strcpy(u.username, usernames[i]);
+		strcpy(u.uname, usernames[i]);
 		strcpy(u.password, usernames[i]);
 		u.aid = accountIds[i];
 		u.is_admin = i%2;
 
 		if (create_user(&u) < 0) {
-			printf("create_user: Failed");
+			printf("create_user: Failed\n");
 			return 1;
 		} else {
 			printf("User created with ID = %lu\n", u.id);
@@ -139,7 +139,7 @@ int test_user_functions(id_t *accountIds) {
 	printf("\n\n");
 
 	if(get_user_from_id(ua[1].id, &u) < 0) {
-		printf("get_user_from_id: Failed");
+		printf("get_user_from_id: Failed\n");
 		return 1;
 	}
 	printf("Requested: ");
@@ -149,12 +149,23 @@ int test_user_functions(id_t *accountIds) {
 	printf("get_user_from_id: Successful\n");
 	printf("\n\n");
 
+	if(get_user_from_uname(ua[2].uname, &u) < 0) {
+		printf("get_user_from_uname: Failed\n");
+		return 1;
+	}
+	printf("Requested: ");
+	print_user(ua[2]);
+	printf("Returned: ");
+	print_user(u);
+	printf("get_user_from_uname: Successful\n");
+	printf("\n\n");
+
 	if (delete_user(ua[2].id) < 0) {
 		printf("delete_user: Failed\n");
 		return 1;
 	}
 	if(get_user_from_id(ua[2].id, &u) != ENOTFOUND) {
-		printf("get_user_from_id: Failed");
+		printf("get_user_from_id: Failed\n");
 		return 1;
 	}
 	if (delete_user(-100) >= 0) {
