@@ -379,7 +379,7 @@ int server_init() {
     return sock_fd;
 }
 
-void killServer() {
+void kill_server() {
     printf("\nShutting down server\n");
 
     if (close(sock_fd) == -1) {
@@ -394,7 +394,7 @@ int main() {
 	return -1;
     }
 
-    signal(SIGINT, killServer);
+    signal(SIGINT, kill_server);
 
     while (1) {
 	int nsd = accept(sock_fd, NULL, NULL);
