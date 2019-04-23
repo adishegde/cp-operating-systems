@@ -30,6 +30,11 @@ int connect_to_server(int portno) {
 
     if (connect(sd, (struct sockaddr*) &serv, sizeof(serv)) == -1) {
 	    syserr(AT);
+	    if (close(sd) == -1) {
+		syserr(AT);
+	    }
+
+	    return EFAIL;
     }
 
     return sd;
@@ -405,7 +410,7 @@ void menu(id_t sid) {
 
 int main() {
 	int sd = connect_to_server(PORTNO);
-	if (sd == -1) {
+	if (sd == EFAIL) {
 		printf("Cannot connect to server\n");
 		return 1;
 	}
